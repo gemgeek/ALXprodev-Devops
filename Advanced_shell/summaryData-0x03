@@ -1,0 +1,19 @@
+#!/bin/bash
+
+INPUT_DIR="pokemon_data"
+CSV_FILE="pokemon_report.csv"
+
+echo "Name,Height (m),Weight (kg)" > "$CSV_FILE"
+
+for file in "$INPUT_DIR"/*.json
+do
+  jq -r '.name, .height, .weight' "$file" | xargs | awk -F' ' '{name=toupper(substr($1,1,1)) substr($1,2); height=$2/10; weight=$3/10; printf "%s,%.1f,%.1f\n", name, height, weight}' >> "$CSV_FILE"
+done
+
+echo "CSV Report generated at: $CSV_FILE"
+echo
+
+cat "$CSV_FILE"
+echo
+
+awk -F',' 'NR > 1 { total_height += $2; total_weight += $3; count++ } END { printf "Average Height: %.2f m\n", total_height/count; printf "Average Weight: %.2f kg\n", total_weight/count }' "$CSV_FILE"
