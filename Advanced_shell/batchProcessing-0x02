@@ -1,6 +1,6 @@
 #!/bin/bash
 
-POKEMON_LIST=("bulbasaur" "ivysaur" "Pikablu" "venusaur" "charmander")
+POKEMON_LIST=("bulbasaur" "ivysaur" "venusaur" "charmander" "charmeleon" "Pikablu")
 OUTPUT_DIR="pokemon_data"
 ERROR_LOG="error_log.txt"
 
