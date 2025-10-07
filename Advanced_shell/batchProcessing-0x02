@@ -1,23 +1,40 @@
 #!/bin/bash
 
-POKEMON_LIST=("bulbasaur" "ivysaur" "venusaur" "charmander" "charmeleon")
+POKEMON_LIST=("bulbasaur" "ivysaur" "Pikablu" "venusaur" "charmander")
 OUTPUT_DIR="pokemon_data"
+ERROR_LOG="error_log.txt"
 
 mkdir -p "$OUTPUT_DIR"
 
 for pokemon in "${POKEMON_LIST[@]}"
 do
-    echo "Fetching data for ${pokemon}..."
+    lowercase_pokemon="${pokemon,,}"
+    echo "--- Processing ${lowercase_pokemon} ---"
     
-    API_URL="https://pokeapi.co/api/v2/pokemon/${pokemon}"
-    FILENAME="${OUTPUT_DIR}/${pokemon}.json"
+    API_URL="https://pokeapi.co/api/v2/pokemon/${lowercase_pokemon}"
+    FILENAME="${OUTPUT_DIR}/${lowercase_pokemon}.json"
     
-    curl -s -f -o "$FILENAME" "$API_URL"
-    
-    if [ $? -eq 0 ]; then
-        echo "Saved data to ${FILENAME} ✅"
-    else
-        echo "Failed to fetch data for ${pokemon} ❌"
+    success=false
+    for attempt in {1..3}
+    do
+        curl -s -f -o "$FILENAME" "$API_URL"
+        
+        if [ $? -eq 0 ]; then
+            echo "Saved data to ${FILENAME} ✅"
+            success=true
+            break
+        else
+            if [ "$attempt" -lt 3 ]; then
+                echo "Attempt ${attempt} failed. Retrying in 2 seconds..."
+                sleep 2
+            fi
+        fi
+    done
+
+    if [ "$success" = false ]; then
+        echo "Failed to fetch data for ${lowercase_pokemon} after 3 attempts. Skipping. ❌"
+        echo "$(date): FAILED to retrieve data for ${lowercase_pokemon}" >> "$ERROR_LOG"
+        rm -f "$FILENAME"
     fi
     
     sleep 1
