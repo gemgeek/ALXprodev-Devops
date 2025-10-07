@@ -1,0 +1,32 @@
+#!/bin/bash
+
+POKEMON_LIST=("bulbasaur" "ivysaur" "venusaur" "charmander" "charmeleon")
+OUTPUT_DIR="pokemon_data"
+
+mkdir -p "$OUTPUT_DIR"
+
+fetch_one() {
+    pokemon=$1
+    echo "[PID: $$] Starting download for ${pokemon}..."
+    
+    API_URL="https://pokeapi.co/api/v2/pokemon/${pokemon}"
+    FILENAME="${OUTPUT_DIR}/${pokemon}.json"
+    
+    curl -s -f -o "$FILENAME" "$API_URL"
+    
+    if [ $? -eq 0 ]; then
+        echo "[PID: $$] ✅ Finished download for ${pokemon}."
+    else
+        echo "[PID: $$] ❌ FAILED download for ${pokemon}."
+        rm -f "$FILENAME"
+    fi
+}
+
+for pokemon in "${POKEMON_LIST[@]}"
+do
+    fetch_one "$pokemon" &
+done
+
+echo "--> All download jobs launched. Waiting for completion..."
+wait
+echo "--> All parallel downloads are complete."
